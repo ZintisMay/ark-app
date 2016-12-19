@@ -1,0 +1,111 @@
+
+	div {
+/*		border-radius:1px;
+		border-style:solid;
+		border-color:black;*/
+	}
+	.textContainer{
+		/*height:20%;*/
+		margin:0;
+		position:relative;
+		top:80%;
+		left:50%;
+	    transform: translate(-50%, -50%);
+	    color:white;
+	}
+
+	.titleJumbo{
+		text-align: center;
+  		vertical-align: text-bottom; 
+  		color:white;
+  		height:30%;
+	}
+
+	.titleImage{
+		width:100%;
+	}
+	.button{
+		text-align:center;
+	}
+	.answerButton, .doneButton{
+		text-align:center;
+		width:100%;
+	}
+
+
+	.bottomContainer{
+		bottom:0;
+		position:fixed;
+		z-index:1000;
+		width:100%;
+	}
+	.bigH1{
+		font-size:100px;
+	}
+	.quizTitle{
+		color:#DDDDDD;
+	}
+	.titleJumbo > h1{
+  	  text-shadow: 3px 3px black;
+	}
+	.questionDiv>h1, .quizTitle{
+  	  text-shadow: 2px 2px black;
+	}
+	.titleJumbo > h4, .h4shadow{
+  	  text-shadow: 1px 1px black;
+	}
+	.h4shadow{
+		color:white;
+	}
+	.BPface{
+		/*left the external background image link in case I needed it*/
+		/*background-image: url('http://www.gundemiyorumla.com/data/out/4/379915-brad-pitt-wallpapers-3000x2144.jpg');*/
+
+		background-image: url(/static/assets/bp.jpg);
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size:cover;
+		height:100%; 
+		width:100%;
+		position:absolute; 
+		z-index:-1;
+		top:50%;
+		left:50%;
+		transform:translate(-50%, -50%);
+	}
+	.questionDiv{
+		color:white;
+		height:40%;
+	}
+	.submitButtonDiv{
+		bottom:0;
+		position:relative;
+		height:15%;
+	}
+	.beginButton{
+		height:100px;
+		border-radius:5px;
+
+	}
+	.beginButton>*{
+		position:relative;
+		top:30%;
+	}
+	html, body{
+		height:100%;
+	}
+	#mainContainer{
+		height:100%;
+	}
+
+	.answerButton{
+		width:100%;
+		text-overflow:ellipsis;
+		white-space: normal; 
+	}
+	.input-group>*{
+		color:black;
+	}
+	.previewImg{
+		border-radius:15px;
+	}

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html ng-app="angularQuiz">
+<head>
+	<title>
+		
+		Movie Quiz
+
+	</title>
+
+	<!-- wy jquery? -->
+	<script   src="https://code.jquery.com/jquery-3.1.0.min.js"   integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="   crossorigin="anonymous"></script>
+
+	<!-- Lodash -->
+	<script src = "https://cdn.jsdelivr.net/lodash/4.15.0/lodash.min.js"></script>
+
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+	<script src="static/dependencies/angular1.min.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="/static/css/quiz.css">
+
+</head>
+
+<body ng-controller="MainCTRL">
+
+	<div class="BPface"></div>
+
+	<div class="container" id="mainContainer">
+
+			<div class="titleJumbo">
+
+				<h1 class="bigH1">Movie Quiz</h1>
+				<h4>by Zintis May</h4>
+
+			</div>
+
+			<div class="questionDiv text-center">
+				<h1 ng-if="QUIZ.displayScore">Score:</h1>
+				<h1>{{QUIZ.displayScore}}</h1>
+				<h1 ng-if="QUIZ.displayScore">Correct</h1>
+			</div>
+
+			<div class="submitButtonDiv">
+
+				<div ng-if="!QUIZ.ready" ng-click="QUIZ.ready=true;DBsearch(QUIZ.queryActor);" class="button btn-primary beginButton" data-toggle="modal" data-target="#myModal" >
+					<h2>Begin</h2>
+				</div>
+
+				<div ng-if="QUIZ.ready" ng-click="QUIZ.ready=false; QUIZ.tryAgain()" class="button btn-success beginButton">
+					<h2>Start Over!</h2>
+				</div>
+
+
+				<div class="input-group">
+
+					<span class="input-group-btn">
+					<button class="btn btn-secondary" type="button" ng-click="">Generate Quiz for:</button>
+					</span>
+
+			        <input type="text" class="form-control" placeholder="Search for an actor..." ng-model="QUIZ.queryActor">
+
+			    </div>
+
+			    <div class="text-center">
+					<h4 class="h4shadow">Powered by MovieDB.com</h4>
+				</div>
+
+			</div>
+
+	</div>
+
+	<!-- QUIZ modal -->
+	<div id="myModal" class="modal fade" role="">
+
+		<div class="modal-dialog modal-lg">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+
+				<div class="modal-header">
+					<div class="col col-sm-6">
+						<div class="text-center">
+							<h1 class="quizTitle">
+								{{QUIZ.currentActor}}
+							</h1>					
+						</div>	
+						<h2>
+							Question #: {{QUIZ.currentQuestion+1}}
+						</h2>
+						<h3>
+							{{QUIZ.questions[QUIZ.currentQuestion]}}
+						</h3>
+					</div>
+					<div class="col col-sm-6">
+						<img src="{{QUIZ.images[QUIZ.currentQuestion]}}" style="width:100%" class="previewImg">
+					</div>
+				</div>
+
+				<div class="modal-body">
+
+					<div 
+					class="btn btn-default answerButton" 
+					ng-repeat="maybe in QUIZ.dummyAnswers[QUIZ.currentQuestion]"
+					ng-click="QUIZ.pushMyAnswer(maybe)">
+					<h3>{{maybe}}</h3>
+					</div>
+
+				</div>
+
+
+
+			</div>
+
+		</div>
+
+	</div>
+
+	<script type="text/javascript">
+		
+	//initializes the module, and then controller
+	angular.module('angularQuiz', []).controller("MainCTRL", function($scope, $http){
+
+		//function to allow me to see variables being passed in the ng-click fields
+		function logger(x){
+			console.log(x);
+		}
+
+		$scope.logger=logger;
+
+		//shuffles the initial array
+		function shuffleArray(array) {
+		    for (var i = array.length - 1; i > 0; i--) {
+		        var j = Math.floor(Math.random() * (i + 1));
+		        var temp = array[i];
+		        array[i] = array[j];
+		        array[j] = temp;
+		    }
+		    return array;
+		}
+
+		//easier than writing the full math.random
+		function RANDOM(x){
+			return Math.floor(Math.random() * (x + 1))
+		}
+
+		//main quiz object containing vars and methods
+		$scope.QUIZ = {
+			queryActor: "Brad Pitt",
+			currentActor: "Brad Pitt",
+			currentQuestion : 0,
+			answers:[],
+			dummyAnswers:[],
+			trueAnswers:[],
+			questions:[],
+			correctCount : 0,
+			displayScore: null,
+			ready:false,
+			images: [],
+			pushMyAnswer: function(x){
+				this.answers.push(x);
+				if(x == this.trueAnswers[this.currentQuestion]){
+					this.correctCount++;
+				}
+				this.currentQuestion++;
+				console.log(this);
+				if(this.currentQuestion>this.questions.length-1){
+					$('#myModal').modal('hide');
+					this.displayScore = this.correctCount + "/" + this.questions.length;
+				}
+			},
+			pushDummyAnswers: function(x){
+				this.dummyAnswers.push(x);
+			},			
+			pushTrueAnswer: function(x){
+				this.trueAnswers.push(x);
+			},
+			pushQuestion:function(x){
+				this.questions.push(x);
+			},
+			resetGame: function(){
+				this.currentQuestion = 0;
+				this.answers = [];
+				this.dummyAnswers = [];
+				this.trueAnswers = [];
+				this.questions = [];
+				this.correctCount = 0;
+				this.displayScore = null;
+				this.ready = false;
+				this.images = [];
+			},
+			tryAgain:function(){
+				this.currentQuestion = 0;
+				this.answers = [];
+				this.dummyAnswers = [];
+				this.trueAnswers = [];
+				this.questions = [];
+				this.correctCount = 0;
+				this.displayScore = null;
+				this.ready = false;	
+
+				//this refreshes the questions using the same data set
+				generateQuestions($scope.questionData, 3);	
+			},
+			switchActors:function(){
+
+				//switches the active actor to the one in the modal box
+				this.currentActor = this.queryActor;
+			}
+		}
+
+
+		$scope.DBsearch = function(x){
+			console.log(x);
+			var queryObject = {'name':x};
+			$http.post('/api/custom', queryObject).then(function(response){
+			
+				console.log(response);
+
+				$scope.QUIZ.resetGame();
+
+				console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$',$scope.QUIZ);
+
+				delete $scope.questionData;
+
+				$scope.questionData = [];
+				// console.log("$scope.questionData", $scope.questionData);
+
+				var temp = response.data.results;
+
+				console.log("temp", temp);
+
+				for(y in temp){
+
+					console.log(temp[y].name, x);
+
+					if(x == temp[y].name){
+
+						
+
+			 			for(z in temp[y].known_for){
+
+			 				// console.log("z", z);
+
+			 				var tempObject = {};
+
+			 				for(a in temp[y].known_for[z]){
+
+								// console.log('a', a);
+
+	 			 				if(a == "title" || a == "overview"){
+	 			 					// console.log('push');
+				 					tempObject[a] = temp[y].known_for[z][a];	
+
+			 					}else if(a == "release_date"){
+			 						// console.log('push');
+			 						tempObject[a] = temp[y].known_for[z][a].substring(0,4);
+
+			 					}else if(a == "backdrop_path"){
+				 					tempObject[a] = 'https://image.tmdb.org/t/p/w500'+temp[y].known_for[z][a] ;
+				 				}
+
+			 				}
+			 				console.log("<<<<<<<<<<<<<",tempObject)
+			 				$scope.questionData.push(tempObject);
+
+			 			};
+
+			 				
+
+					}
+				}
+				console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",$scope.questionData)
+				$scope.QUIZ.switchActors();
+				generateQuestions($scope.questionData, 3);	
+				console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$',$scope.QUIZ);
+
+
+			});
+		}
+
+		$scope.questionData = [];
+
+		//array to hold the moviedata from DB
+		$scope.movieData = [];
+
+		//grab the movie data from file, served from node api
+		$scope.initiateGame = function(){
+
+
+		    $http.get("/api/themoviedb_data").then(function(response) {
+		    	// console.log(response.data.results);
+
+		    	$scope.movieData = response.data.results;
+		    	
+		 		$scope.movieData.forEach(function(key2, val){
+		 			$scope.QUIZ.resetGame();
+		 			logger(key2);
+		 			var tempObject = {};
+		 			for(y in key2){
+		 				logger(y);
+		 				if(y == "title" || y == "overview"){
+
+			 				tempObject[y] = key2[y];	
+		 				}else if(y == "release_date"){
+		 					tempObject[y] = key2[y].substring(0,4);
+		 				}else if(y == "backdrop_path"){
+		 					tempObject[y] = 'https://image.tmdb.org/t/p/w500'+key2[y];
+		 				}
+		 			};
+		 			$scope.questionData.push(tempObject);
+		 		});
+				
+		    	// logger($scope.movieData);
+
+				logger($scope.questionData);
+
+				generateQuestions($scope.questionData, 3);	
+				console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",$scope.questionData)
+					// console.log('generate', count);
+
+
+			});
+		}
+
+		$scope.initiateGame();
+
+		function generateQuestions(array, countMax){
+
+			for(var count=0;count<countMax;count++){
+
+				shuffleArray(array);
+
+				console.log("array[0]", array[0]);
+
+				var question ="";
+				var dummyAnswers = [];
+				var trueAnswer = "";
+
+				var arrLen = array.length;
+				var ticker = 1;
+
+				$scope.QUIZ.images.push(array[0].backdrop_path);
+
+				switch(RANDOM(2)){
+
+					case 0:
+						//date>movie
+						console.log('case 0');
+
+						question = $scope.QUIZ.currentActor + " starred in what movie in the year " + array[0].release_date + "?";
+						trueAnswer = array[0].title;
+
+						for(x=1;x<3;x++){
+							if(array[0].title != array[ticker].title){
+								dummyAnswers.push(array[ticker].title);
+							}else{
+								y++;
+							}
+							ticker++;
+						}
+						break;
+
+					case 1:
+						console.log('case 1');
+
+						// movie>topic
+						question = "What is the synopsis of "+$scope.QUIZ.currentActor + "'s movie " + array[0].title + "?";
+						trueAnswer = array[0].overview;
+
+						for(x=1;x<3;x++){
+							if(array[0].overview != array[ticker].overview){
+								dummyAnswers.push(array[ticker].overview);
+							}else{
+								y++;
+							}
+							ticker++;
+						}
+						break;
+
+					case 2:
+
+						console.log('case 2');
+
+						//movie>releasedate
+						question = $scope.QUIZ.currentActor + "'s movie, " + array[0].title + " was released in what year?";
+						trueAnswer = array[0].release_date;
+
+						for(x=1;x<3 ;x++){
+							if(array[0].release_date != array[ticker].release_date){
+								dummyAnswers.push(array[ticker].release_date);
+							}else{
+								y++;
+							}
+							ticker++;
+						}
+						break;
+
+				}
+
+
+				console.log(question, trueAnswer, dummyAnswers);
+
+				dummyAnswers.push(trueAnswer);
+
+				$scope.QUIZ.pushQuestion(question);
+				$scope.QUIZ.pushDummyAnswers(dummyAnswers);
+				$scope.QUIZ.pushTrueAnswer(trueAnswer);
+
+				console.log($scope.QUIZ);
+			}
+		}
+
+
+
+	});
+
+	</script>
+
+</body>
+</html>

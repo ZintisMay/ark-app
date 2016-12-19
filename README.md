@@ -1,1 +1,1 @@
-# ark-app
+# arkadium-app
