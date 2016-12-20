@@ -303,12 +303,12 @@
 
 			$http.post('/api/actorImage', queryObject).then(function(response){
 				console.log(response.data);
-				$scope.QUIZ.actorImage = 'https://image.tmdb.org/t/p/w500' + response.data;
+				if(response.data){
+					$scope.QUIZ.actorImage = 'https://image.tmdb.org/t/p/w500' + response.data;
+				}
 				console.log($scope.QUIZ.actorImage);
 			});
 		}
-
-
 
 		//searches the DB, updates QUIZ data
 		$scope.DBsearch = function(x){
