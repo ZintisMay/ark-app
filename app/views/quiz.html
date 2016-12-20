@@ -33,7 +33,7 @@
 
 <body ng-controller="MainCTRL">
 
-	<div class="BPface"></div>
+	<div class="BPface" style="background-image: url({{QUIZ.actorImage}})";></div>
 
 	<div class="container" id="mainContainer">
 
@@ -66,11 +66,11 @@
 				</div>
 
 
-				<div class="input-group">
+				<div class="input-group" style="margin-top: 10px">
 
 					<span class="input-group-btn">
 
-						<button class="btn btn-danger" type="button" ng-click="DBsearch(QUIZ.queryActor);">Generate Quiz for:</button>
+						<button class="btn btn-danger" type="button" ng-click="DBsearch(QUIZ.queryActor);DBactorImage(QUIZ.queryActor);">Generate Quiz for:</button>
 
 					</span>
 
@@ -173,6 +173,7 @@
 			displayScore: null,
 			ready:false,
 			images: [],
+			actorImage: '/static/assets/bp.jpg',
 			pushMyAnswer: function(x){
 				this.answers.push(x);
 				if(x == this.trueAnswers[this.currentQuestion]){
@@ -220,74 +221,129 @@
 				this.images = [];
 
 				//this refreshes the questions using the same data set
-				generateQuestions($scope.questionData, 3);	
+				generateQuestions($scope.questionData, 5);	
 			},
-			switchActors:function(){
-
+			switchActors:function(x){
+				if(x){
+				this.currentActor = x;
+			}
 				//switches the active actor to the one in the modal box
-				this.currentActor = this.queryActor;
+
 			}
 		}
 
+		//////////////////////////this function has been updated, along with api
+
 		//searches the DB
+		// $scope.DBsearchActorDetails = function(x){
+
+		// 	var queryObject = {'name':x};
+
+		// 	//makes a custom call, passes queryObject
+		// 	$http.post('/api/custom', queryObject).then(function(response){
+			
+		// 		$scope.QUIZ.resetGame();
+
+		// 		var temp = response.data.results;
+
+		// 		//look over all parts of the data array
+		// 		for(y in temp){
+
+		// 			//look for that specific actor
+		// 			if(x == temp[y].name){
+
+		// 				//look through their known_for movies
+		// 				for(z in temp[y].known_for){
+
+		// 	 				var tempObject = {};
+
+		// 	 				//for each movie in there you...
+		// 	 				for(a in temp[y].known_for[z]){
+
+		// 	 					//check the field type, then push it to the tempObject
+	 // 			 				if(a == "title" || a == "overview"){
+
+		// 		 					tempObject[a] = temp[y].known_for[z][a];	
+
+
+		// 	 					}else if(a == "release_date"){
+
+		// 	 						tempObject[a] = temp[y].known_for[z][a].substring(0,4);
+
+
+		// 	 					}else if(a == "backdrop_path"){
+
+		// 		 					tempObject[a] = 'https://image.tmdb.org/t/p/w500'+temp[y].known_for[z][a] ;
+
+		// 		 				}
+
+		// 	 				}
+
+		// 	 				//then push the tempobject up to questionData
+		// 	 				$scope.questionData.push(tempObject);
+
+		// 	 			};
+
+			 				
+
+		// 			}
+		// 		}
+
+		// 		//switch actor variables - might be unnecessary now
+		// 		$scope.QUIZ.switchActors();
+
+		// 		generateQuestions($scope.questionData, 3);	
+
+		// 	});
+		// }
+
+		$scope.DBactorImage= function(x){
+
+			var queryObject = {'name':x};
+
+			$http.post('/api/actorImage', queryObject).then(function(response){
+				console.log(response.data);
+				$scope.QUIZ.actorImage = 'https://image.tmdb.org/t/p/w500' + response.data;
+				console.log($scope.QUIZ.actorImage);
+			});
+		}
+
+
+
+		//searches the DB, updates QUIZ data
 		$scope.DBsearch = function(x){
 
 			var queryObject = {'name':x};
 
 			//makes a custom call, passes queryObject
-			$http.post('/api/custom', queryObject).then(function(response){
+			$http.post('/api/moviesByActorName', queryObject).then(function(response){
 			
 				$scope.QUIZ.resetGame();
 
-				var temp = response.data.results;
+				console.log(response);
+
+				var tempResultArray = response.data.results;
 
 				//look over all parts of the data array
-				for(y in temp){
+				for(y in tempResultArray){
 
-					//look for that specific actor
-					if(x == temp[y].name){
+	 				var tempObject = {};
 
-						//look through their known_for movies
-						for(z in temp[y].known_for){
+	 				//this strips the usable data out of the results
+	 				tempObject.title = tempResultArray[y]['title'];
+	 				tempObject.overview = tempResultArray[y]['overview'];
+	 				tempObject.release_date = tempResultArray[y]['release_date'].substring(0,4);
+	 				tempObject.backdrop_path = 'https://image.tmdb.org/t/p/w500' + tempResultArray[y]['backdrop_path'];
 
-			 				var tempObject = {};
+	 				//then push the tempobject up to questionData		 				
+	 				$scope.questionData.push(tempObject);
 
-			 				//for each movie in there you...
-			 				for(a in temp[y].known_for[z]){
+ 				}
 
-			 					//check the field type, then push it to the tempObject
-	 			 				if(a == "title" || a == "overview"){
+	 			//this sets the actor to be what the search returned
+				$scope.QUIZ.switchActors(response.data.nameForTheImageField);
 
-				 					tempObject[a] = temp[y].known_for[z][a];	
-
-
-			 					}else if(a == "release_date"){
-
-			 						tempObject[a] = temp[y].known_for[z][a].substring(0,4);
-
-
-			 					}else if(a == "backdrop_path"){
-
-				 					tempObject[a] = 'https://image.tmdb.org/t/p/w500'+temp[y].known_for[z][a] ;
-
-				 				}
-
-			 				}
-
-			 				//then push the tempobject up to questionData
-			 				$scope.questionData.push(tempObject);
-
-			 			};
-
-			 				
-
-					}
-				}
-
-				//switch actor variables - might be unnecessary now
-				$scope.QUIZ.switchActors();
-
-				generateQuestions($scope.questionData, 3);	
+				generateQuestions($scope.questionData, 5);	
 
 			});
 		}
@@ -336,7 +392,7 @@
 		 		});
 				
 				//make questions with it
-				generateQuestions($scope.questionData, 3);	
+				generateQuestions($scope.questionData, 5);	
 
 			});
 		}

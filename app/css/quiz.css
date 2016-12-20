@@ -61,7 +61,7 @@
 		/*left the external background image link in case I needed it*/
 		/*background-image: url('http://www.gundemiyorumla.com/data/out/4/379915-brad-pitt-wallpapers-3000x2144.jpg');*/
 
-		background-image: url(/static/assets/bp.jpg);
+/*		background-image: url(/static/assets/bp.jpg);*/
 		background-repeat: no-repeat;
 		background-position: center;
 		background-size:cover;
@@ -108,4 +108,8 @@
 	}
 	.previewImg{
 		border-radius:15px;
+	}
+	.questionDiv > *{
+		font-size:80px;
+  	    text-shadow: 3px 3px black;
 	}
